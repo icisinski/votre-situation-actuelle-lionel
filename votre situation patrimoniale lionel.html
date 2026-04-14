@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votre situation patrimoniale actuelle — Patrimy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --t: #00A88F;
+  --td: #006B5C;
+  --tl: #4ECDB8;
+  --text: #111;
+  --text-muted: #aaa;
+  --border: #e8e8e8;
+  --f: 'Outfit', Arial, sans-serif;
+  --r-md: 12px;
+  --r-lg: 16px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: #fff; font-family: var(--f); color: var(--text); -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+.page { flex: 1; display: flex; flex-direction: column; padding: 40px 36px; }
+
+.page-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--t); margin-bottom: 6px; }
+h1 { font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.8px; margin-bottom: 28px; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 32px; border-bottom: 1.5px solid var(--border); }
+.tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 10px 18px 12px;
+  font-size: 14px; font-weight: 500; font-family: var(--f);
+  color: var(--text-muted); background: none; border: none;
+  cursor: pointer; position: relative; transition: color 0.15s;
+  margin-bottom: -1.5px;
+}
+.tab::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--t); border-radius: 2px 2px 0 0;
+  transform: scaleX(0); transition: transform 0.18s;
+}
+.tab.active { color: var(--t); font-weight: 600; }
+.tab.active::after { transform: scaleX(1); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab svg { width: 15px; height: 15px; }
+
+.view { display: none; flex: 1; flex-direction: column; }
+.view.active { display: flex; }
+
+/* DONUT */
+.donut-layout { display: flex; flex-direction: column; align-items: center; gap: 36px; padding: 24px 0; flex: 1; }
+.donut-outer { position: relative; width: 260px; height: 260px; flex-shrink: 0; }
+.donut-outer canvas { width: 260px !important; height: 260px !important; }
+.donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; pointer-events: none; }
+.donut-val { font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -1.5px; }
+.donut-lbl { font-size: 11px; color: var(--text-muted); font-weight: 400; margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+
+.legend { display: flex; flex-direction: row; gap: 32px; justify-content: center; flex-wrap: wrap; }
+.legend-row { display: flex; align-items: flex-start; gap: 12px; }
+.legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; margin-top: 3px; }
+.legend-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.legend-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.legend-amount { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; }
+.legend-pct { font-size: 12px; font-weight: 600; color: var(--t); margin-top: 2px; }
+
+/* KANBAN */
+.kanban { display: flex; gap: 18px; align-items: stretch; flex: 1; }
+.col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.col-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-md); margin-bottom: 12px; }
+.col-head-title { font-size: 13px; font-weight: 600; }
+.col-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: auto; }
+
+.col-blue .col-head { background: #eef4ff; }
+.col-blue .col-head-title { color: #2563EB; }
+.col-blue .col-badge { background: #dbeafe; color: #2563EB; }
+
+.col-green .col-head { background: #edfaf6; }
+.col-green .col-head-title { color: var(--td); }
+.col-green .col-badge { background: #b2ece1; color: var(--td); }
+
+.col-amber .col-head { background: #fffbeb; }
+.col-amber .col-head-title { color: #b45309; }
+.col-amber .col-badge { background: #fde68a; color: #92400e; }
+
+.card-item {
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px 18px; margin-bottom: 10px;
+  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.card-item:hover { border-color: var(--t); box-shadow: 0 2px 16px rgba(0,168,143,0.12); transform: translateY(-1px); }
+.card-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.card-amount { font-size: 16px; font-weight: 700; color: var(--text); }
+.card-pct { font-size: 11px; font-weight: 500; color: var(--t); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="page-eyebrow">Patrimy · Audit patrimonial</p>
+  <h1>Votre situation patrimoniale actuelle</h1>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('allocation')" id="tab-allocation">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>
+      Votre allocation
+    </button>
+    <button class="tab" onclick="switchTab('placements')" id="tab-placements">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="18" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+      Vos placements
+    </button>
+  </div>
+
+  <!-- VUE ALLOCATION -->
+  <div class="view active" id="view-allocation">
+    <div class="donut-layout">
+      <div class="donut-outer">
+        <canvas id="donut"></canvas>
+        <div class="donut-center">
+          <div class="donut-val">€1 233K</div>
+          <div class="donut-lbl">Total</div>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-row">
+          <div class="legend-swatch" style="background:#00A88F;"></div>
+          <div>
+            <div class="legend-name">Immobilier</div>
+            <div class="legend-sub">Résidence principale · Charenton</div>
+            <div class="legend-amount">€800 000</div>
+            <div class="legend-pct">64,9 % du patrimoine</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-swatch" style="background:#4ECDB8;"></div>
+          <div>
+            <div class="legend-name">Placements financiers</div>
+            <div class="legend-sub">3 Assurances-vie · PEA · PER</div>
+            <div class="legend-amount">€410 000</div>
+            <div class="legend-pct">33,3 % du patrimoine</div>
+          </div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-swatch" style="background:#006B5C;"></div>
+          <div>
+            <div class="legend-name">Liquidités</div>
+            <div class="legend-sub">Livret A</div>
+            <div class="legend-amount">€23 000</div>
+            <div class="legend-pct">1,9 % du patrimoine</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VUE PLACEMENTS -->
+  <div class="view" id="view-placements">
+    <div class="kanban">
+
+      <div class="col col-blue">
+        <div class="col-head">
+          <span class="col-head-title">Liquidités</span>
+          <span class="col-badge">1</span>
+        </div>
+        <div class="card-item">
+          <div class="card-name">Livret A</div>
+          <div class="card-amount">€23 000</div>
+          <div class="card-pct">1,9 % du patrimoine</div>
+        </div>
+      </div>
+
+      <div class="col col-green">
+        <div class="col-head">
+          <span class="col-head-title">Placements financiers</span>
+          <span class="col-badge">5</span>
+        </div>
+        <div class="card-item">
+          <div class="card-name">Assurances-vie (×3)</div>
+          <div class="card-amount">€260 000</div>
+          <div class="card-pct">21,1 % du patrimoine</div>
+        </div>
+        <div class="card-item">
+          <div class="card-name">PEA</div>
+          <div class="card-amount">€50 000</div>
+          <div class="card-pct">4,1 % du patrimoine</div>
+        </div>
+        <div class="card-item">
+          <div class="card-name">PER</div>
+          <div class="card-amount">€100 000</div>
+          <div class="card-pct">8,1 % du patrimoine</div>
+        </div>
+      </div>
+
+      <div class="col col-amber">
+        <div class="col-head">
+          <span class="col-head-title">Immobilier</span>
+          <span class="col-badge">1</span>
+        </div>
+        <div class="card-item">
+          <div class="card-name">Résidence principale</div>
+          <div class="card-amount">€800 000</div>
+          <div class="card-pct">64,9 % du patrimoine</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.view').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('tab-' + t).classList.add('active');
+  document.getElementById('view-' + t).classList.add('active');
+}
+
+new Chart(document.getElementById('donut').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Immobilier', 'Placements financiers', 'Liquidités'],
+    datasets: [{
+      data: [800000, 410000, 23000],
+      backgroundColor: ['#00A88F', '#4ECDB8', '#006B5C'],
+      borderWidth: 4,
+      borderColor: '#ffffff',
+      hoverOffset: 6
+    }]
+  },
+  options: {
+    cutout: '74%',
+    responsive: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111',
+        titleColor: '#fff',
+        bodyColor: 'rgba(255,255,255,0.75)',
+        titleFont: { family: 'Outfit', weight: '600', size: 13 },
+        bodyFont: { family: 'Outfit', size: 12 },
+        padding: 12,
+        cornerRadius: 8,
+        callbacks: {
+          label: function(c) {
+            var total = 1233000;
+            var pct = ((c.parsed / total) * 100).toFixed(1);
+            return ' ' + c.parsed.toLocaleString('fr-FR') + ' € — ' + pct + '%';
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
